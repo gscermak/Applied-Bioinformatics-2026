@@ -1,0 +1,147 @@
+# Prepare the shared reference genome, annotation, and BWA index.
+make genome
+make[1]: Entering directory '/home/user/Documents/bioinfo/cdf'
+mkdir -p fasta/
+curl -fsSL https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/025/998/455/GCF_025998455.1_ASM2599845v1/GCF_025998455.1_ASM2599845v1_genomic.fna.gz | gunzip > fasta/CHC155.fasta
+seqkit stats fasta/CHC155.fasta
+file                format  type  num_seqs    sum_len    min_len    avg_len    max_len
+fasta/CHC155.fasta  FASTA   DNA          1  1,696,601  1,696,601  1,696,601  1,696,601
+make[1]: Leaving directory '/home/user/Documents/bioinfo/cdf'
+make gff
+make[1]: Entering directory '/home/user/Documents/bioinfo/cdf'
+mkdir -p gff/
+curl -fsSL https://ftp.ncbi.nlm.nih.gov/genomes/all/GCF/025/998/455/GCF_025998455.1_ASM2599845v1/GCF_025998455.1_ASM2599845v1_genomic.gff.gz | gunzip -c > gff/CHC155.gff
+ls -lh gff/CHC155.gff
+-rw-rw-r-- 1 user user 1.1M Oct 24 13:15 gff/CHC155.gff
+make[1]: Leaving directory '/home/user/Documents/bioinfo/cdf'
+make index
+make[1]: Entering directory '/home/user/Documents/bioinfo/cdf'
+bwa index fasta/CHC155.fasta
+make[1]: Leaving directory '/home/user/Documents/bioinfo/cdf'
+# Download and align samples from the design file in parallel.
+cat design.csv | head -10 | parallel --colsep , --header : --eta -j 4 \
+	make \
+	SRR={run_accession} \
+	SAMPLE_NAME={sample_alias} \
+	N=40000 \
+	align
+make[1]: Entering directory '/home/user/Documents/bioinfo/cdf'
+mkdir -p fastq/
+fastq-dump -X 40000 --split-files -O fastq/ SRR27606652
+Read 40000 spots for SRR27606652
+Written 40000 spots for SRR27606652
+seqkit stats fastq/SRR27606652_1.fastq fastq/SRR27606652_2.fastq
+file                       format  type  num_seqs     sum_len  min_len  avg_len  max_len
+fastq/SRR27606652_1.fastq  FASTQ   DNA     40,000  10,040,000      251      251      251
+fastq/SRR27606652_2.fastq  FASTQ   DNA     40,000   9,120,000      228      228      228
+mkdir -p bam/
+bwa mem fasta/CHC155.fasta fastq/SRR27606652_1.fastq fastq/SRR27606652_2.fastq | samtools sort -o bam/412F-DNA-002.bam
+samtools index bam/412F-DNA-002.bam
+samtools flagstat bam/412F-DNA-002.bam
+80951 + 0 in total (QC-passed reads + QC-failed reads)
+80000 + 0 primary
+0 + 0 secondary
+951 + 0 supplementary
+0 + 0 duplicates
+0 + 0 primary duplicates
+70802 + 0 mapped (87.46% : N/A)
+69851 + 0 primary mapped (87.31% : N/A)
+80000 + 0 paired in sequencing
+40000 + 0 read1
+40000 + 0 read2
+67888 + 0 properly paired (84.86% : N/A)
+68576 + 0 with itself and mate mapped
+1275 + 0 singletons (1.59% : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+ls -lh bam/412F-DNA-002.bam
+-rw-rw-r-- 1 user user 12M Oct 24 13:16 bam/412F-DNA-002.bam
+make[1]: Leaving directory '/home/user/Documents/bioinfo/cdf'
+make[1]: Entering directory '/home/user/Documents/bioinfo/cdf'
+mkdir -p fastq/
+fastq-dump -X 40000 --split-files -O fastq/ SRR27606653
+Read 40000 spots for SRR27606653
+Written 40000 spots for SRR27606653
+seqkit stats fastq/SRR27606653_1.fastq fastq/SRR27606653_2.fastq
+file                       format  type  num_seqs     sum_len  min_len  avg_len  max_len
+fastq/SRR27606653_1.fastq  FASTQ   DNA     40,000  10,040,000      251      251      251
+fastq/SRR27606653_2.fastq  FASTQ   DNA     40,000  10,040,000      251      251      251
+mkdir -p bam/
+bwa mem fasta/CHC155.fasta fastq/SRR27606653_1.fastq fastq/SRR27606653_2.fastq | samtools sort -o bam/408F-DNA-001.bam
+samtools index bam/408F-DNA-001.bam
+samtools flagstat bam/408F-DNA-001.bam
+81102 + 0 in total (QC-passed reads + QC-failed reads)
+80000 + 0 primary
+0 + 0 secondary
+1102 + 0 supplementary
+0 + 0 duplicates
+0 + 0 primary duplicates
+72601 + 0 mapped (89.52% : N/A)
+71499 + 0 primary mapped (89.37% : N/A)
+80000 + 0 paired in sequencing
+40000 + 0 read1
+40000 + 0 read2
+69518 + 0 properly paired (86.90% : N/A)
+70366 + 0 with itself and mate mapped
+1133 + 0 singletons (1.42% : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+ls -lh bam/408F-DNA-001.bam
+-rw-rw-r-- 1 user user 14M Oct 24 13:16 bam/408F-DNA-001.bam
+make[1]: Leaving directory '/home/user/Documents/bioinfo/cdf'
+make[1]: Entering directory '/home/user/Documents/bioinfo/cdf'
+mkdir -p fastq/
+fastq-dump -X 40000 --split-files -O fastq/ SRR27606651
+Read 40000 spots for SRR27606651
+Written 40000 spots for SRR27606651
+seqkit stats fastq/SRR27606651_1.fastq fastq/SRR27606651_2.fastq
+file                       format  type  num_seqs     sum_len  min_len  avg_len  max_len
+fastq/SRR27606651_1.fastq  FASTQ   DNA     40,000  12,040,000      301      301      301
+fastq/SRR27606651_2.fastq  FASTQ   DNA     40,000  12,040,000      301      301      301
+mkdir -p bam/
+bwa mem fasta/CHC155.fasta fastq/SRR27606651_1.fastq fastq/SRR27606651_2.fastq | samtools sort -o bam/427F-DNA-001.bam
+samtools index bam/427F-DNA-001.bam
+samtools flagstat bam/427F-DNA-001.bam
+81517 + 0 in total (QC-passed reads + QC-failed reads)
+80000 + 0 primary
+0 + 0 secondary
+1517 + 0 supplementary
+0 + 0 duplicates
+0 + 0 primary duplicates
+72140 + 0 mapped (88.50% : N/A)
+70623 + 0 primary mapped (88.28% : N/A)
+80000 + 0 paired in sequencing
+40000 + 0 read1
+40000 + 0 read2
+68588 + 0 properly paired (85.73% : N/A)
+69800 + 0 with itself and mate mapped
+823 + 0 singletons (1.03% : N/A)
+0 + 0 with mate mapped to a different chr
+0 + 0 with mate mapped to a different chr (mapQ>=5)
+ls -lh bam/427F-DNA-001.bam
+-rw-rw-r-- 1 user user 18M Oct 24 13:16 bam/427F-DNA-001.bam
+make[1]: Leaving directory '/home/user/Documents/bioinfo/cdf'
+# Call variants using all BAM files produced by the batch.
+make call
+make[1]: Entering directory '/home/user/Documents/bioinfo/cdf'
+mkdir -p vcf/
+bcftools mpileup -d 100 --annotate 'INFO/AD,FORMAT/DP,FORMAT/AD,FORMAT/ADF,FORMAT/ADR,FORMAT/SP' -O u \
+	-f fasta/CHC155.fasta \
+	bam/*.bam | \
+	bcftools call --ploidy 2 --annotate 'FORMAT/GQ' -mv -O u | \
+	bcftools norm -f fasta/CHC155.fasta -d all -O u | \
+	bcftools sort --write-index -O z -o vcf/variants.vcf.gz
+bcftools stats vcf/variants.vcf.gz > vcf/variants.stats.txt
+grep '^SN' vcf/variants.stats.txt
+SN	0	number of samples:	3
+SN	0	number of records:	50322
+SN	0	number of no-ALTs:	0
+SN	0	number of SNPs:	49394
+SN	0	number of MNPs:	0
+SN	0	number of indels:	928
+SN	0	number of others:	0
+SN	0	number of multiallelic sites:	51
+SN	0	number of multiallelic SNP sites:	41
+ls -lh vcf/variants.vcf.gz
+-rw-rw-r-- 1 user user 1.9M Oct 24 13:16 vcf/variants.vcf.gz
+make[1]: Leaving directory '/home/user/Documents/bioinfo/cdf'
